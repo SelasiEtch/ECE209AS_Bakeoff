@@ -1,2 +1,4 @@
-#Testing Git
-#Testing Branch
+import soundfile as sf 
+y, sdr = sf.read('test.wav')
+print(y.shape, y.dtype. sr)
+sf.write('out.wav', y, sr)
