@@ -15,6 +15,13 @@ import processing.sound.Waveform;
 
 import weka.core.SerializationHelper;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
+
+
+
+
 /* A class with the main function and Processing visualizations to run the demo */
 
 public class ClassifyVibration extends PApplet {
@@ -36,7 +43,17 @@ public class ClassifyVibration extends PApplet {
 	boolean startFrame=false;
 	String[] framelabels = new String[100];
 	int numlabels=0;
-	SoundFile drum;
+	int num_selection_taps = 0;
+	boolean selection_mode_flag = false;
+	boolean end_of_selection_mode_flag = false;
+	boolean start_instrument_flag = false;
+	int Instrument = 0;
+	SoundFile drum_1;
+	SoundFile drum_2;
+	SoundFile keyboard_1;
+	SoundFile keyboard_2;
+	SoundFile guitar_1;
+	SoundFile guitar_2;
 	String classification;
 	Map<String, List<DataInstance>> trainingData = new HashMap<>();
 	{for (String className : classNames){
@@ -51,6 +68,29 @@ public class ClassifyVibration extends PApplet {
 		
 		return res;
 	}
+    Timer timer = new Timer();
+    TimerTask task = new Helper();
+
+	
+	class Helper extends TimerTask {
+		public int i = 1;
+		
+	    public void run() {
+	    	if(i != 2)
+	    	{
+	    	selection_mode_flag = true;
+	    	i++;
+	    	}
+	    	else
+	    	{
+	    		selection_mode_flag = false;
+	    		end_of_selection_mode_flag = true;
+	    		println("TIMER OFF");
+	    		i= 1;
+	    	}
+	    }
+	}
+	
 	
 	public static void main(String[] args) {
 		PApplet.main("ClassifyVibration");
@@ -61,15 +101,24 @@ public class ClassifyVibration extends PApplet {
 	}
 
 	public void setup() {
-		
+			
 		 
-		drum = new SoundFile(this,"582758__martina_leitschuh__moan_outdoors_man.wav");
+		drum_1 = new SoundFile(this,"33179__mattlohkamp__tom_snr.wav");
+		drum_2 = new SoundFile(this,"587245__michatroschka__05_when.wav");
+		
+		keyboard_1 = new SoundFile(this,"316901__jaz_the_man_2__do-octave.wav");
+		keyboard_2 = new SoundFile(this,"409480__dwengomes__pianofff6-audiotrimmercom.mp3");
+		
+		guitar_1 = new SoundFile(this,"36280__johnnypanic__plucked1.wav");
+		guitar_2 = new SoundFile(this,"11897__medialint__vp795_7thfret_d_a.wav");
+		
+		
 		/* list all audio devices */
 		Sound.list();
 		Sound s = new Sound(this);
 		  
 		/* select microphone device */
-		s.inputDevice(8);
+		s.inputDevice(9);
 		    
 		/* create an Input stream which is routed into the FFT analyzer */
 		fft = new FFT(this, bands);
@@ -87,6 +136,7 @@ public class ClassifyVibration extends PApplet {
 	}
 
 	public void draw() {
+		
 		background(0);
 		fill(0);
 		stroke(255);
@@ -152,12 +202,74 @@ public class ClassifyVibration extends PApplet {
 					classification = framelabels[0];
 					numlabels=0;
 					println(classification);
-					if(classification.charAt(0)=='t')
+					if(end_of_selection_mode_flag == true)
 					{
-						drum.play();
+						switch (num_selection_taps) {
+			            case 1:  Instrument = 1; // DRUM
+			                     break;
+			            case 2:  Instrument = 2; // KEYBOARD
+			                     break;
+			            case 3:  Instrument = 3; // GUITAR
+			            		 break;
+						}
+	                     
+			            end_of_selection_mode_flag = false;
+			            start_instrument_flag = true;
+	     
 					}
-					
-				}
+					if(selection_mode_flag == true && (guessedLabel.charAt(0)=='t'))
+					{
+						num_selection_taps++;
+					}
+					}
+				    else if((guessedLabel.charAt(0)=='t') && (end_of_selection_mode_flag == false) && (start_instrument_flag == false))
+					{
+						num_selection_taps++;
+						println("TIMER ON");
+						timer.schedule(task, 0, 3000);
+					}
+				    else if (start_instrument_flag == true)
+				    {
+				    	if((Instrument == 1))
+				    	{
+				    		if(classification == "tap")
+				    		{
+				    			drum_1.play();
+				    		}
+				    		if(classification == "knuckle")
+				    		{
+				    			drum_2.play();
+				    		}
+				    	}
+				    	if((Instrument == 2))
+				    	{
+				    		if(classification == "tap")
+				    		{
+				    			keyboard_1.play();
+				    		}
+				    		if(classification == "knuckle")
+				    		{
+				    			keyboard_2.play();
+				    		}
+				    	}
+				    	if((Instrument == 3))
+				    	{
+				    		if(classification == "tap")
+				    		{
+				    			guitar_1.play();
+				    		}
+				    		if(classification == "knuckle")
+				    		{
+				    			guitar_2.play();
+				    		}
+				    	}
+				    	if(classification == "slide")
+				    	{
+				    		start_instrument_flag = false;
+				    	}
+				    	
+				    }		
+			
 				else
 				{
 					classification = "silent";
@@ -195,20 +307,6 @@ public class ClassifyVibration extends PApplet {
 				classifier = null;
 			}
 		}
-		/*else if(key=='a')
-		{
-			if (add_cl==false)
-			{
-				add_cl=true;
-			}
-			else if(add_cl == true)
-			{
-				add_cl=false;
-				println("Start training ...");
-				//classifier = new MLClassifier();
-				classifier.train(trainingData);
-			}
-		}*/
 		
 		else if (key == 's') {
 			// Yang: add code to save your trained model for later use
@@ -227,7 +325,7 @@ public class ClassifyVibration extends PApplet {
 			}
 			;*/
 			try {
-				weka.core.SerializationHelper.write("C:\\Users\\emaga\\OneDrive\\Desktop\\training.model", classifier);
+				weka.core.SerializationHelper.write("/Users/selasi/Desktop/training.model", classifier);
 				System.out.println("Saving done!");
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -238,7 +336,7 @@ public class ClassifyVibration extends PApplet {
 		else if (key == 'l') {
 			// Yang: add code to load your previously trained model
 			try {
-				 classifier = (MLClassifier) weka.core.SerializationHelper.read("C:\\Users\\emaga\\OneDrive\\Desktop\\training.model");
+				 classifier = (MLClassifier) weka.core.SerializationHelper.read("/Users/selasi/Desktop/training.model");
 				 System.out.println("Loading done!");
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
