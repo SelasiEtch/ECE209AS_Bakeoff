@@ -43,10 +43,6 @@ public class ClassifyVibration extends PApplet {
 	boolean startFrame=false;
 	String[] framelabels = new String[100];
 	int numlabels=0;
-	int num_selection_taps = 0;
-	boolean selection_mode_flag = false;
-	boolean end_of_selection_mode_flag = false;
-	boolean start_instrument_flag = false;
 	int Instrument = 0;
 	SoundFile drum_1;
 	SoundFile drum_2;
@@ -55,6 +51,8 @@ public class ClassifyVibration extends PApplet {
 	SoundFile guitar_1;
 	SoundFile guitar_2;
 	String classification;
+	String[] Select_Sequence = new String[2];
+	int Select_index = 0;
 	Map<String, List<DataInstance>> trainingData = new HashMap<>();
 	{for (String className : classNames){
 		trainingData.put(className, new ArrayList<DataInstance>());
@@ -67,28 +65,6 @@ public class ClassifyVibration extends PApplet {
 		res.measurements = fftFeatures.clone();
 		
 		return res;
-	}
-    Timer timer = new Timer();
-    TimerTask task = new Helper();
-
-	
-	class Helper extends TimerTask {
-		public int i = 1;
-		
-	    public void run() {
-	    	if(i != 2)
-	    	{
-	    	selection_mode_flag = true;
-	    	i++;
-	    	}
-	    	else
-	    	{
-	    		selection_mode_flag = false;
-	    		end_of_selection_mode_flag = true;
-	    		println("TIMER OFF");
-	    		i= 1;
-	    	}
-	    }
 	}
 	
 	
@@ -165,12 +141,6 @@ public class ClassifyVibration extends PApplet {
 			fftFeatures[i] = spectrum[i];
 		}
 	
-		
-			 
-			
-				
-		
-		
 		//println(max(fftFeatures));
 		fill(255);
 		textSize(30);
@@ -200,76 +170,55 @@ public class ClassifyVibration extends PApplet {
 				if(numlabels>1)
 				{
 					classification = framelabels[0];
+					
+					if(Instrument != 0)
+					{
+						if(Instrument == 1)
+						{
+							if(classification == "tap")
+							{
+								drum_1.play();
+							}
+							else if(classification == "knuckle")
+							{
+								drum_2.play();
+							}
+						}
+						if(Instrument == 2)
+						{
+							if(classification == "tap")
+							{
+								guitar_1.play();
+							}
+							else if(classification == "knuckle")
+							{
+								guitar_2.play();
+							}
+						}
+					}
+					
+					if((Select_index < 2) && (Instrument == 0))
+					{
+						Select_Sequence[Select_index] = classification;
+						Select_index++;
+					}
+					else if (Instrument == 0)
+					{
+						Select_index = 0;
+						if((Select_Sequence[0] == "tap") && (Select_Sequence[1] == "tap"))
+						{
+							Instrument = 1; // Drum
+						}
+						else if((Select_Sequence[0] == "knuckle") && (Select_Sequence[1] == "knuckle"))
+						{
+							Instrument = 2; // Guitar
+						}
+						
+					}
 					numlabels=0;
 					println(classification);
-					if(end_of_selection_mode_flag == true)
-					{
-						switch (num_selection_taps) {
-			            case 1:  Instrument = 1; // DRUM
-			                     break;
-			            case 2:  Instrument = 2; // KEYBOARD
-			                     break;
-			            case 3:  Instrument = 3; // GUITAR
-			            		 break;
-						}
-	                     
-			            end_of_selection_mode_flag = false;
-			            start_instrument_flag = true;
-	     
-					}
-					if(selection_mode_flag == true && (guessedLabel.charAt(0)=='t'))
-					{
-						num_selection_taps++;
-					}
-					}
-				    else if((guessedLabel.charAt(0)=='t') && (end_of_selection_mode_flag == false) && (start_instrument_flag == false))
-					{
-						num_selection_taps++;
-						println("TIMER ON");
-						timer.schedule(task, 0, 3000);
-					}
-				    else if (start_instrument_flag == true)
-				    {
-				    	if((Instrument == 1))
-				    	{
-				    		if(classification == "tap")
-				    		{
-				    			drum_1.play();
-				    		}
-				    		if(classification == "knuckle")
-				    		{
-				    			drum_2.play();
-				    		}
-				    	}
-				    	if((Instrument == 2))
-				    	{
-				    		if(classification == "tap")
-				    		{
-				    			keyboard_1.play();
-				    		}
-				    		if(classification == "knuckle")
-				    		{
-				    			keyboard_2.play();
-				    		}
-				    	}
-				    	if((Instrument == 3))
-				    	{
-				    		if(classification == "tap")
-				    		{
-				    			guitar_1.play();
-				    		}
-				    		if(classification == "knuckle")
-				    		{
-				    			guitar_2.play();
-				    		}
-				    	}
-				    	if(classification == "slide")
-				    	{
-				    		start_instrument_flag = false;
-				    	}
-				    	
-				    }		
-			
+					
+				}
 				else
 				{
 					classification = "silent";
