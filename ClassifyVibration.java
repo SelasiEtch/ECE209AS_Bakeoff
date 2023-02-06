@@ -173,7 +173,11 @@ public class ClassifyVibration extends PApplet {
 					
 					if(Instrument != 0)
 					{
-						if(Instrument == 1)
+						if(classification == "slide")
+						{
+							Instrument = 0;
+						}
+						else if(Instrument == 1)
 						{
 							if(classification == "tap")
 							{
@@ -184,7 +188,7 @@ public class ClassifyVibration extends PApplet {
 								drum_2.play();
 							}
 						}
-						if(Instrument == 2)
+						else if(Instrument == 2)
 						{
 							if(classification == "tap")
 							{
@@ -208,12 +212,16 @@ public class ClassifyVibration extends PApplet {
 						if((Select_Sequence[0] == "tap") && (Select_Sequence[1] == "tap"))
 						{
 							Instrument = 1; // Drum
+							println("Drum Selected");
+							
 						}
 						else if((Select_Sequence[0] == "knuckle") && (Select_Sequence[1] == "knuckle"))
 						{
 							Instrument = 2; // Guitar
+							println("Guitar Selected");
 						}
-						
+						Select_Sequence[0] = "Empty";
+						Select_Sequence[1] = "Empty";
 					}
 					numlabels=0;
 					println(classification);
