@@ -1,10 +1,17 @@
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 
 import processing.core.PApplet;
 import processing.sound.AudioIn;
@@ -34,7 +41,7 @@ public class ClassifyVibration extends PApplet {
 	int nsamples = 1024;
 	float[] spectrum = new float[bands];
 	float[] fftFeatures = new float[bands];
-	String[] classNames = {"knuckle","nail", "silence","tap","slide"};
+	String[] classNames = {"knuckle", "silence","tap","slide"};
 	int temp = 0;
 	int classIndex = 0;
 	int dataCount = 0;
@@ -94,7 +101,7 @@ public class ClassifyVibration extends PApplet {
 		Sound s = new Sound(this);
 		  
 		/* select microphone device */
-		s.inputDevice(9);
+		s.inputDevice(8);
 		    
 		/* create an Input stream which is routed into the FFT analyzer */
 		fft = new FFT(this, bands);
@@ -141,7 +148,7 @@ public class ClassifyVibration extends PApplet {
 			fftFeatures[i] = spectrum[i];
 		}
 	
-		//println(max(fftFeatures));
+		//println(fftFeatures);
 		fill(255);
 		textSize(30);
 		if(classifier != null) {
@@ -166,61 +173,61 @@ public class ClassifyVibration extends PApplet {
 			}
 			else
 			{
-				// Silent and Start Frame True;
 				startFrame=false;
 				if(numlabels>1)
 				{
 					classification = framelabels[0];
 					
+					
 					if(Instrument != 0)
 					{
-						if(classification == "slide")
+						if(classification.charAt(1) == 'l')
 						{
 							Instrument = 0;
+							println("Program is back to selection menu");
 						}
 						else if(Instrument == 1)
 						{
-							if(classification == "tap")
+							if(classification.charAt(0) == 't' )
 							{
 								drum_1.play();
 							}
-							else if(classification == "knuckle")
+							else if(classification.charAt(0) == 'k')
 							{
 								drum_2.play();
 							}
 						}
 						else if(Instrument == 2)
 						{
-							if(classification == "tap")
+							if(classification.charAt(0) == 't')
 							{
 								guitar_1.play();
 							}
-							else if(classification == "knuckle")
+							else if(classification.charAt(0) == 'k')
 							{
 								guitar_2.play();
 							}
 						}
 					}
 					
-					if((Select_index < 2) && (Instrument == 0))
+					else if((Select_index < 2) && (Instrument == 0) && (classification.charAt(1)!='l'))
 					{
 						Select_Sequence[Select_index] = classification;
 						Select_index++;
-						if(Select_index == 2)
-						{
-							numlabels=10;
-						}
+						//println(Select_index);
 					}
+					
 					else if (Instrument == 0)
 					{
+						
 						Select_index = 0;
-						if((Select_Sequence[0] == "tap") && (Select_Sequence[1] == "tap"))
+						if((Select_Sequence[0].charAt(0) == 't') && (Select_Sequence[1].charAt(0) == 't'))
 						{
 							Instrument = 1; // Drum
 							println("Drum Selected");
 							
 						}
-						else if((Select_Sequence[0] == "knuckle") && (Select_Sequence[1] == "knuckle"))
+						else if((Select_Sequence[0].charAt(0) == 'k') && (Select_Sequence[1].charAt(0) == 'k'))
 						{
 							Instrument = 2; // Guitar
 							println("Guitar Selected");
@@ -235,6 +242,7 @@ public class ClassifyVibration extends PApplet {
 				else
 				{
 					classification = "silent";
+					
 					numlabels=0;
 				}
 				
@@ -251,6 +259,7 @@ public class ClassifyVibration extends PApplet {
 			dataCount = trainingData.get(classNames[classIndex]).size();
 			text("Data collected: " + dataCount, 20, 60);
 		}
+		
 	}
 	
 	public void keyPressed() {
@@ -287,7 +296,7 @@ public class ClassifyVibration extends PApplet {
 			}
 			;*/
 			try {
-				weka.core.SerializationHelper.write("/Users/selasi/Desktop/training.model", classifier);
+				weka.core.SerializationHelper.write("C:\\Users\\emaga\\OneDrive\\Desktop\\training.model", classifier);
 				System.out.println("Saving done!");
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -298,21 +307,23 @@ public class ClassifyVibration extends PApplet {
 		else if (key == 'l') {
 			// Yang: add code to load your previously trained model
 			try {
-				 classifier = (MLClassifier) weka.core.SerializationHelper.read("/Users/selasi/Desktop/training.model");
+				 classifier = (MLClassifier) weka.core.SerializationHelper.read("C:\\Users\\emaga\\OneDrive\\Desktop\\training.model");
 				 System.out.println("Loading done!");
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-			
+		
 	
 		else
 		{
 		 
 			trainingData.get(classNames[classIndex]).add(captureInstance(classNames[classIndex]));
+			//println(trainingData);
+			
 		}
 		
 	}
-
+	
 }
