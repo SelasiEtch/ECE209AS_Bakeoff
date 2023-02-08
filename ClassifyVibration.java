@@ -215,6 +215,10 @@ public class ClassifyVibration extends PApplet {
 						Select_Sequence[Select_index] = classification;
 						Select_index++;
 						//println(Select_index);
+						if(Select_index == 2)
+						{
+							numlabels=10;
+						}
 					}
 					
 					else if (Instrument == 0)
