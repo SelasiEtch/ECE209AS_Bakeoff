@@ -206,6 +206,10 @@ public class ClassifyVibration extends PApplet {
 					{
 						Select_Sequence[Select_index] = classification;
 						Select_index++;
+						if(Select_index == 2)
+						{
+							numlabels=10;
+						}
 					}
 					else if (Instrument == 0)
 					{
@@ -214,14 +218,12 @@ public class ClassifyVibration extends PApplet {
 						{
 							Instrument = 1; // Drum
 							println("Drum Selected");
-							startFrame=true;
 							
 						}
 						else if((Select_Sequence[0] == "knuckle") && (Select_Sequence[1] == "knuckle"))
 						{
 							Instrument = 2; // Guitar
 							println("Guitar Selected");
-							startFrame=true;
 						}
 						Select_Sequence[0] = "Empty";
 						Select_Sequence[1] = "Empty";
