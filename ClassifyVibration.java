@@ -60,6 +60,8 @@ public class ClassifyVibration extends PApplet {
 	String classification;
 	String[] Select_Sequence = new String[2];
 	int Select_index = 0;
+	int a =10;
+	boolean numflag=false;
 	Map<String, List<DataInstance>> trainingData = new HashMap<>();
 	{for (String className : classNames){
 		trainingData.put(className, new ArrayList<DataInstance>());
@@ -174,10 +176,13 @@ public class ClassifyVibration extends PApplet {
 			else
 			{
 				startFrame=false;
-				if(numlabels>1)
+				if(numlabels>1 || numflag==true)
 				{
 					classification = framelabels[0];
-					
+					if(numflag==false) {
+						println(Select_index+" "+classification);
+						//println(classification);
+						}
 					
 					if(Instrument != 0)
 					{
@@ -210,14 +215,16 @@ public class ClassifyVibration extends PApplet {
 						}
 					}
 					
-					else if((Select_index < 2) && (Instrument == 0) && (classification.charAt(1)!='l'))
+					else if((Select_index < 2) && (Instrument == 0) )
 					{
 						Select_Sequence[Select_index] = classification;
 						Select_index++;
 						//println(Select_index);
 						if(Select_index == 2)
 						{
-							numlabels=10;
+							
+							a=1;
+							numflag=true;
 						}
 					}
 					
@@ -238,9 +245,14 @@ public class ClassifyVibration extends PApplet {
 						}
 						Select_Sequence[0] = "Empty";
 						Select_Sequence[1] = "Empty";
+						numflag=false;
 					}
+					
 					numlabels=0;
+					/*if(numflag==false) {
+					println(Select_index);
 					println(classification);
+					}*/
 					
 				}
 				else
