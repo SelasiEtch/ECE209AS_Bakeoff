@@ -44,18 +44,18 @@ namespace Oculus.Interaction.HandPosing
         
         Please add variables here as per your need.  
         */
-        [SerializeField] private GameObject cube2;
-        private float grabSize2 = Mathf.Infinity; 
-        private float comparePos = Mathf.Infinity; 
-        private float count = 0;
+        [SerializeField] private GameObject cube2; //new target object 
+        private float grabSize2 = Mathf.Infinity; //new variable to grab the size of the new cube
+        private float comparePos = Mathf.Infinity; //new variable to find the position of our target cube
+        private float count = 0; //count used to track the current trial
 
-        private float short_scale = 0.1f;
-        private float medium_scale = 0.2f;
-        private float large_scale = 0.3f;
+        private float short_scale = 0.1f; //scalar that sizes the cubes for small size
+        private float medium_scale = 0.2f;//scalar that sizes the cubes for medium size
+        private float large_scale = 0.3f;//scalar that sizes the cubes for large size
 
-       //private float short_dis = 0.5f;
-        private float medium_dis = 0.6f;
-       private float large_dis = 0.7f; 
+       private float short_dis = 0.5f; //scalar that sets the distance to short
+        private float medium_dis = 0.6f; //scalar that sets the distance to medium
+       private float large_dis = 0.7f; //scalar that sets the distance to large
 
         private StreamWriter _writer; // to write data into a file
         private string _filename; // the name of the file
@@ -140,7 +140,7 @@ namespace Oculus.Interaction.HandPosing
                 initialPos = cube.transform.position.x;
                 initialTime = Time.time;
                 comparePos = cube2.transform.position.x;
-                //ChangColor(cube);
+                
                 
             }
             // stop counting time and distance once a user releases the cube
@@ -149,65 +149,71 @@ namespace Oculus.Interaction.HandPosing
                 grabDistance = Mathf.Abs(endPos - initialPos);
                 grabTime = Time.time - initialTime;
                 
-                
+                //if loop to only accept whenever the object overlaps the target by 80% or more
                 if((Mathf.Abs(comparePos-endPos)<(0.2*grabSize)))
                 {
                     count++;
                     WriteToFile(grabTime, grabSize, grabDistance);
-                    StartCoroutine(ChangColor(cube,0,1,0));
+                    StartCoroutine(ChangColor(cube,0,1,0)); //if successful color changes to green and is reset after 1 second for feedback
+                    /////////////////////If statements to go through the different sizes/distances combinations
                     if(count>9 && count<=19)
                     {
                         cube.transform.localScale = new Vector3(medium_scale, medium_scale, medium_scale);
                         cube2.transform.localScale = new Vector3(medium_scale, medium_scale, medium_scale);
+                        
                     }
                    if(count>19 && count<=29)
                     {
                         cube.transform.localScale = new Vector3(large_scale, large_scale, large_scale);
                         cube2.transform.localScale = new Vector3(large_scale, large_scale, large_scale);
+                        
                     }
                     if(count>29 && count<=39)
                     {
                         cube.transform.localScale = new Vector3(short_scale, short_scale, short_scale);
                         cube2.transform.localScale = new Vector3(short_scale, short_scale, short_scale);
-                        cube.transform.position = new Vector3(medium_dis, -0.15f,0.4f);
-                        cube2.transform.position = new Vector3(medium_dis, -0.15f,0.4f);
+                       
                     }
                     if(count>39 && count<=49)
                     {
                         cube.transform.localScale = new Vector3(medium_scale, medium_scale, medium_scale);
                         cube2.transform.localScale = new Vector3(medium_scale, medium_scale, medium_scale);
+                       
                     }
                       if(count>49 && count<=59)
                     {
                         cube.transform.localScale = new Vector3(large_scale, large_scale, large_scale);
                         cube2.transform.localScale = new Vector3(large_scale, large_scale, large_scale);
+                        
                     }
                       if(count>59 && count<=69)
                     {
                         cube.transform.localScale = new Vector3(short_scale, short_scale, short_scale);
                         cube2.transform.localScale = new Vector3(short_scale, short_scale, short_scale);
-                        cube.transform.position = new Vector3(large_dis, -0.15f,0.4f);
-                        cube2.transform.position = new Vector3(large_dis, -0.15f,0.4f);
+                       
                     }
                     if(count>69 && count<=79)
                     {
                         cube.transform.localScale = new Vector3(medium_scale, medium_scale, medium_scale);
                         cube2.transform.localScale = new Vector3(medium_scale, medium_scale, medium_scale);
+                        
                     }
                       if(count>79 && count<=89)
                     {
                         cube.transform.localScale = new Vector3(large_scale, large_scale, large_scale);
                         cube2.transform.localScale = new Vector3(large_scale, large_scale, large_scale);
+                        
                     }
-                    if(count>89)
+                    if(count>89) //once 90 successful trials the application closes so user knows that trials are complete
                     {
                         Application.Quit();
                     }
                 }
+                /////else statement for unsuccessful trials; cube turns red as feedback
                 else
                 {
                     StartCoroutine(ChangColor(cube,1,0,0));
-                    //cube.transform.position = new Vector3(initialPos,-0.15f,0.4f);
+                    
                 }
                 
                 
@@ -237,7 +243,8 @@ namespace Oculus.Interaction.HandPosing
                 return (System.DateTime.UtcNow - epochStart).TotalMilliseconds;
             }
         }
-
+        /////////// changes the color of the cube depending on successful or unsuccessful trial and sets the starting position of the next trial
+        ////////// has a delay so user is aware if trial was successful or not
         IEnumerator ChangColor(GameObject cube, float red, float green, float blue)
              {
                  //Get the Renderer component from the new cube
@@ -254,6 +261,19 @@ namespace Oculus.Interaction.HandPosing
 
                  cubeRenderer.material.SetColor("_Color", oldColor);
                 cube.transform.position = new Vector3(initialPos,-0.15f,0.4f);
+                if(count>0 && count<=29)
+                {
+                    cube2.transform.position = new Vector3(short_dis, -0.15f, 0.4f);
+                }
+                if(count>29 && count<=59)
+                {
+                    cube2.transform.position = new Vector3(medium_dis, -0.15f, 0.4f);
+                }
+                if(count>59 && count<=89)
+                {
+                    cube2.transform.position = new Vector3(large_dis, -0.15f, 0.4f);
+                }
+
 
 
 
